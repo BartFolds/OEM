@@ -5,9 +5,9 @@ services:
     container_name: postgres
     restart: always
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: 26ZJ78JGFRkM42K
+      POSTGRES_DB: placeholder
+      POSTGRES_USER: placeholder
+      POSTGRES_PASSWORD: placeholder
     command: postgres -c log_connections=on -c log_statement=all
     ports:
       - "5432:5432"
