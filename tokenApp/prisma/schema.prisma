@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  shopifyId   BigInt     @unique
+  firstname   String
+  lastname    String
+  email       String     @unique
+  phone       String?
+  company     String?
+  address     String?
+  software    Boolean    @default(false)
+  nissanCount Int?       @default(0)
+  gmCount     Int?       @default(0)
+  fordCount   Int?       @default(0)
+  passthrough String?
+  fordName    String?
+  fordNames   FordName[]
+  tokens      Token[]
+}
+
+model Token {
+  id          Int      @id @default(autoincrement())
+  orderNumber String   @unique
+  purchasedAt DateTime @default(now())
+  ownerId     Int
+  type        Type
+  valid       Boolean  @default(true)
+  owner       User     @relation(fields: [ownerId], references: [id])
+}
+
+model FordName {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  ownerId Int
+  HWID    String? @unique
+  owner   User    @relation(fields: [ownerId], references: [id])
+}
+
+enum Type {
+  FORD
+  GM
+  NISSAN
+}

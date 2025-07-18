@@ -1,0 +1,14 @@
+node_modules/
+# Keep environment variables out of version control
+.env
+.env.test
+root/.env
+src/generated/prisma/
+root/backups/
+root/pythonBot/bot_output/screenshots/
+root/pythonBot/bot_output/logs/
+root/TokenItemCodes.txt
+docs/
+.venv
+jest.config.js
+/src/t1/

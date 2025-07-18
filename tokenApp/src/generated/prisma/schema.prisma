@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  shopifyId   Int      @unique
+  firstname   String
+  lastname    String
+  email       String   @unique
+  phone       String
+  company     String?
+  software    Boolean  @default(false)
+  nissanCount Int      @default(0)
+  nissanToken Nissan[]
+  gmCount     Int      @default(0)
+  gmToken     Gm[]
+  fordCount   Int      @default(0)
+  fordToken   Ford[]
+  tokens      Token[]
+  passthrough String?
+  fordName    String?
+}
+
+model Token {
+  id          Int      @id @default(autoincrement())
+  orderNumber Int      @unique
+  purchasedAt DateTime @default(now())
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+  type        Type
+  valid       Boolean  @default(true)
+}
+
+model Nissan {
+  id          Int      @id @default(autoincrement())
+  orderNumber Int      @unique
+  purchasedAt DateTime @default(now())
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+}
+
+model Gm {
+  id          Int      @id @default(autoincrement())
+  orderNumber Int      @unique
+  purchasedAt DateTime @default(now())
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+}
+
+model Ford {
+  id          Int      @id @default(autoincrement())
+  orderNumber Int      @unique
+  purchasedAt DateTime @default(now())
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+}
+
+enum Type {
+  FORD
+  GM
+  NISSAN
+}

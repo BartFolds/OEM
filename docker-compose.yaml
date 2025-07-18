@@ -1,0 +1,80 @@
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 26ZJ78JGFRkM42K
+    command: postgres -c log_connections=on -c log_statement=all
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin", "-d", "mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  node-app:
+    build: 
+      context: ./tokenApp
+    container_name: node-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./tokenApp/.env
+    volumes:
+      - ./tokenApp:/app
+      - node_modules:/app/node_modules
+    working_dir: /app
+    command: sh -c "npx prisma generate && npm run dev"
+    ports:
+      - "5003:5003"
+    networks:
+      - app-net
+    restart: always
+
+  ford-bot:
+    build:
+      context: ./pythonbot
+    container_name: ford-bot
+    volumes: 
+      - ./pythonbot/bot_output/screenshots:/app/screenshots
+      - ./pythonbot/bot_output/logs:/app/logs
+    depends_on:
+      - postgres
+      - node-app
+    env_file:
+      - ./pythonbot/.env
+    ports:
+      - "5015:5000"
+    networks:
+      - app-net
+    restart: always
+  
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"  # If using SSL
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - node-app
+    networks:
+      - app-net
+
+volumes:
+  pgdata:
+  node_modules:
+
+networks:
+  app-net:
