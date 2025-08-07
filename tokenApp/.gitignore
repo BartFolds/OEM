@@ -12,3 +12,4 @@ docs/
 .venv
 jest.config.js
 /src/t1/
+root/docker-compose.yaml
