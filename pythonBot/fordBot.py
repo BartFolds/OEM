@@ -169,7 +169,9 @@ def run_bot(form_data):
     finally:
         if driver: 
             driver.quit()
-
+@app.route('/home')
+def home():
+    return 'Ford Bot is running!'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():

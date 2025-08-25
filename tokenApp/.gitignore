@@ -1,5 +1,4 @@
 node_modules/
-# Keep environment variables out of version control
 .env
 .env.test
 root/.env
@@ -12,4 +11,4 @@ docs/
 .venv
 jest.config.js
 /src/t1/
-root/docker-compose.yaml
+docker-compose.yaml

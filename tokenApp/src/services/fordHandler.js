@@ -44,14 +44,14 @@ function fordHandler(order, username){
         if (item.product_id == hundPk){
             total += 100
         }
-        else {
+        if (item.product_id == oneFord || item.product_id == software) {
             total += 1
         }
         })
 
     console.log(total)
 
-    return {field1 : username, field2: total}
+    return {"field1" : username, "field2": total}
 }
 
 async function getFordNameMeta(custId) {

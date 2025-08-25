@@ -8,7 +8,7 @@ RUN apk add --no-cache openssl curl
 WORKDIR /app
 
 # Copy the package.json and the package-lock.json to the container
-COPY package*.json .
+COPY package*.json ./
 
 #Install the dependencies
 RUN npm install -g nodemon

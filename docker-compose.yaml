@@ -5,9 +5,9 @@ services:
     container_name: postgres
     restart: always
     environment:
-      POSTGRES_DB: placeholder
-      POSTGRES_USER: placeholder
-      POSTGRES_PASSWORD: placeholder
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 26ZJ78JGFRkM42K
     command: postgres -c log_connections=on -c log_statement=all
     ports:
       - "5432:5432"
@@ -28,6 +28,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - ./tokenApp/.env
     volumes:
@@ -53,8 +55,6 @@ services:
       - node-app
     env_file:
       - ./pythonbot/.env
-    ports:
-      - "5015:5000"
     networks:
       - app-net
     restart: always
@@ -64,13 +64,40 @@ services:
     container_name: nginx
     ports:
       - "80:80"
-      - "443:443"  # If using SSL
+      #- "443:443"  # If using SSL
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - node-app
+      - ford-bot
     networks:
       - app-net
+
+  studio:
+    build:
+      context: ./tokenApp
+    container_name: prisma-studio
+    command: npx prisma studio --port 5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres
+    env_file:
+      - ./tokenApp/.env
+    working_dir: /app
+    volumes:
+      - ./tokenApp:/app
+      - node_modules:/app/node_modules
+    networks:
+      - app-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-net
+    restart: always
 
 volumes:
   pgdata:

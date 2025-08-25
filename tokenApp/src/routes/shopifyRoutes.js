@@ -66,6 +66,7 @@ router.post("/", async (req, res) => {
     return res.status(401).send("Unauthorized")
   }
   
+  res.status(200).send('OK'); 
   const order = req.body
 
   console.log(order)
@@ -80,7 +81,7 @@ router.post("/", async (req, res) => {
     const orderNum = order.order_number;
 
     const fullAddress = buildFullAddress(order.customer.default_address)
-    console.log(fullAddress)
+    //console.log(fullAddress)
     
     
     // filter line items array to only contain relevant items
@@ -115,11 +116,10 @@ router.post("/", async (req, res) => {
 
     if(remote.length > 0) {
       // create tokens
-      console.log("Generating tokens")
       const tokenArray = tokenGeneration(remote, orderNum)
-      console.log(...tokenArray)
+      console.log("Generated Tokens: ", ...tokenArray)
       const allTokens = updateOrderNums(tokenArray, orderNum)
-      console.log("updated order numbers", ...allTokens)
+      console.log("updated order numbers: ", ...allTokens)
 
     //check if user exists, if not create a new user. If the user exists, add tokens to that user
 
@@ -156,14 +156,23 @@ router.post("/", async (req, res) => {
       if (calc.length > 0) {
         
         console.log("Retrieving ford username")
-        const ford_check = await getFordNameMeta(order.customer.id)
-        console.log(ford_check)
-        if (!ford_check){
-          throw new error("Customer doesn't have a ford username logged.")
 
+        let ford_check = order.note;
+        if(ford_check){
+          console.log("Ford username found in order: ", ford_check) 
+        }
+        
 
-        }else{
-          console.log("Found ford username: " + ford_check)
+        if(ford_check == null) {
+        ford_check = await getFordNameMeta(order.customer.id)
+        console.log("Ford Check Result: ", ford_check)
+        }
+       
+            // Check for a valid response (success is true and customer is not null)
+        if (!ford_check) {
+          throw new Error("Customer doesn't have a ford username logged.");
+        } else{
+          console.log("Beginning to use username: " + ford_check)
           const fordUser = await prisma.user.upsert({
               where: {
                 shopifyId: BigInt(order.customer.id)
@@ -199,31 +208,41 @@ router.post("/", async (req, res) => {
 
             console.log(fordUser.shopifyId)
 
-           let toPythonBot = fordHandler(calc, fordUser.fordName)
-           console.log(toPythonBot.field1, toPythonBot.field2)
+           let toPythonBot = fordHandler(calc, ford_check)
+           console.log("Sending package to bot: ", toPythonBot.field1, toPythonBot.field2)
+
+           const jsonData = JSON.stringify(toPythonBot)
            
           // Forward to Python receiver
-          await axios.post(process.env.PYTHON_BOT_URL, toPythonBot);
+          await axios.post(process.env.PYTHON_BOT_URL, jsonData, {
+            headers: {'Content-Type': 'application/json',
+            }
+          }).then(response => {
+            console.log('Data sent successfully', response.data)
+          }).catch( error => {
+            console.error('Error sending data to Ford Bot:', error)
+          })
+
+          const logName = `${fordUser.firstname} ${fordUser.lastname}`
       
-          res.status(200).json({ message: 'User processed', user });
+          res.status(200).json({ message: 'User processed', logName });
           }
       }
 
   } else {
     console.log("No tokens. Order Ignored", order.id)
   }
-  res.status(200).send("Webhook processed")
 })
 
 // Add this new test route to send sample data to the bot
 router.get('/test-forward', async (req, res) => {
   const sampleData = {
     field1: "bfolds25",
-    field2: 3,
+    field2: 0,
   };
 
   try {
-    const response = await axios.post('http://ford-bot:5015/webhook', sampleData);
+    const response = await axios.post('http://ford-bot:5000/webhook', sampleData);
     res.status(200).send({
       message: "Sample data forwarded to ford-bot successfully",
       botResponse: response.data,

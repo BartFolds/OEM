@@ -6,7 +6,9 @@ import authRoutes from './routes/authRoutes.js'
 import shopifyRoutes from './routes/shopifyRoutes.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import rawBodyMiddleware from './middleware/rawBodyMiddleware.js'
-import logWebhook from './middleware/logglingMiddleware.js'
+import logWebhook from './middleware/loggingMiddleware.js'
+import winston from 'winston'
+import preventDuplicates from './middleware/redisMiddleware.js'
 
 
 const app = express()
@@ -40,7 +42,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/auth', authRoutes)
-app.use('/webhook', rawBodyMiddleware, logWebhook, shopifyRoutes)
+app.use('/webhook', rawBodyMiddleware, preventDuplicates, logWebhook, shopifyRoutes)
 
 
 

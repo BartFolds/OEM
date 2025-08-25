@@ -24,7 +24,9 @@
     "fs": "^0.0.1-security",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "redis": "^5.8.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
